@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{!-- socket.io --}}
+    <script src="/js/cdn/socket.io.min.js"></script>
+    {{!-- three.js --}}
+    <script src="/js/cdn/three.min.js"></script>
+    {{!-- Vue --}}
+    <script src="/js/cdn/vue.global.js"></script>
+    {{!-- axios --}}
+    <script src="/js/cdn/axios.min.js"></script>
+    {{!-- fontawsome --}}
+    <script src="/js/cdn/fontawsome.js"></script>
+    {{!-- confetti --}}
+    <script src="/js/cdn/confetti.js"></script>
+
+    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
+    <link rel="stylesheet" href="/css/style.css">
+    {{!-- animate.css --}}
+    <link rel="stylesheet" href="/css/animate.min.css">
+    <title>Panuku</title>
+</head>
+
+<body>
+    <div class="threeBG" id="threeBG">
+    </div>
+    <div class="BG">
+        <div class="dot">
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+        </div>
+    </div>
+    <div id="app" v-cloak>
+        <div class="main" v-if="main">
+            <div class="navbar">
+                <div class="navlogo"><a href="/"><img src="/img/PANUKU2.png" alt=""></a></div>
+                <div class="nav">
+                    {{#if sUemail}}
+                    <a href="/api/logout" class="utility">登出</a>
+                    {{!-- <form action="/account/{{sUemail}}" method="post">
+                        <button class="utility" type="submit">{{sUname}}</button>
+                    </form> --}}
+                    <a href="/account/{{sUemail}}" class="utility">{{sUname}}</a>
+                    {{else}}
+                    <a href="/signUp" class="utility">註冊</a>
+                    <a href="/login" class="utility">登入</a>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="logo">
+                {{!-- <h1>Panuku</h1> --}}
+                <img src="/img/PANUKU_blackBG.png" alt="">
+            </div>
+            <div class="enterform authroom" v-if="authroom">
+                <div class="fwijf">
+                    <div class="joininput">
+                        <input class="animate__animated " :class="{animate__headShake:isshowalert}" type="text"
+                            placeholder="房間代碼" v-model="pinCode" @keyup.enter="click_authPinCode">
+                    </div>
+                    <div class="joinbtn">
+                        <button @click="click_authPinCode">加入</button>
+                    </div>
+                </div>
+
+                <div class="joinbtn create">
+                    <button @click="click_create">建立房間</button>
+                </div>
+            </div>
+
+            <div class="enterform nickname" v-if="join">
+                <div class="joininput">
+                    <input type="text" placeholder="暱稱" v-model="nickname" @keyup.enter="click_joinroom">
+                </div>
+                <div class="joinbtn">
+                    <button @click="click_joinroom">加入</button>
+                </div>
+            </div>
+            <div class="enterform createroom" v-if="create">
+                <div class="joininput">
+                    <input type="text" placeholder="暱稱" v-model="roomHostName" @keyup.enter="click_createroom">
+                </div>
+                <div class="joinbtn">
+                    <button @click="click_createroom">建立</button>
+                </div>
+            </div>
+
+        </div>
+        <div class="room" v-if="room">
+            <div class="roomheader">
+                <img @click="showMember" id="member" class="member" src="/img/member.svg" alt="">
+                <div class="roompincode">
+                    <span class="pincodetext">Pin Code</span>
+                    <span class="pincode">\{{mySocket.room.pinCode}}</span>
+                </div>
+                <img @click="showChatRoom" class="member" src="/img/chat.svg" alt="">
+                <transition name="fade">
+                    <div class="membermodal" id="membermodal" v-show="isShowMember">
+                        <div class="members" id="members">
+                            <h4 class="nobody" v-if="!mySocket.room.member.length">還沒有人加入唷</h4>
+                            <div id="memname" class="membernickname memname animate__animated animate__jello"
+                                v-for="(member,index) in mySocket.room.member">\{{member}}</div>
+                        </div>
+                    </div>
+                </transition>
+            </div>
+            <transition name="fadeinandout" enter-active-class="animate__animated animate__fadeInRight"
+                leave-active-class="animate__animated animate__fadeOutRight">
+                <div class="chatroom" v-show="isShowChatRoom">
+                    <div class="chatdialog">
+                        <div class="msgcontainer" id="msgcontainer">
+                            <div class="msg" v-for="(msg, index) in mySocket.room.msgList">
+                                <div class="msgname"><span>\{{msg.sendBy}}</span></div>
+                                <div class="msgcontent">
+                                    <p :class="msg.questionMsg">\{{msg.msg}}</p><span>\{{msg.time}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+            <div class="damaku">
+                <div class="maku" v-for="(makuR,index) in makuroad">
+                    <div class="movemsg" v-for="msgobj in makuR.space" :road="index" :key="msgobj.id"
+                        :class="[msgobj.border,msgobj.color]">\{{msgobj.msg}}</div>
+                </div>
+                <h1 v-for="item in makuroad"></h1>
+            </div>
+            <div class="question" v-show="mySocket.room.question!==''">
+                <div class="QT">
+                    <h3>\{{questioncontent}}</h3>
+                </div>
+                <div class="Qcontent">
+                    <p>\{{answercontent}}</p>
+                </div>
+            </div>
+            <div class="msginputcontaniner">
+                <div class="challenge" v-if="identity=='Admin'">
+                    <button @click="openQmodal" class="challengebtn">
+                        <div class="animate__animated animate__jello animate__infinite">Q</div>
+                    </button>
+                </div>
+                <div class="texteffect challenge">
+                    <button class="texteffectbtn" @click="showEffectmodal">
+                        <div class="animate__animated animate__jello animate__infinite">Tt</div>
+                    </button>
+                    <transition name="fade">
+                        <div class="Tteffectmodal" v-show="isShowEffectmodal">
+                            <div class="TEheader">
+                                <img class="coin" src="/img/coin.svg" alt=""><span>\{{accountInfo.points}}</span>
+                            </div>
+                            <div class="effectEX">
+                                <div class="msgeffect" :class="[applyEffect.border, applyEffect.color]">Text</div>
+                            </div>
+                            <div class="bordereffectlist" id="bordereffectlist">
+                                <div @click="CchangeBorderEffect('bordernone')" class="bordereffect">none</div>
+                                <div @click="CchangeBorderEffect(border,index)" class="bordereffect"
+                                    v-for="(border, index) in borderStyle" :class="border.name">
+                                    <div class="cost" v-if="border.islock">
+                                        <img class="coin" src="/img/coin.svg" alt=""><span>\{{border.price}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="Coloreffectlist">
+                                <div @click="CchangeColorEffect(color)" class="coloreffect"
+                                    v-for="(color, index) in colorStyle" :class="color">Text</div>
+                            </div>
+                        </div>
+                    </transition>
+                </div>
+                <div class="msginput">
+                    <input v-model="inputMsg" type="text" placeholder="Aa" @keyup.enter="sendMsg">
+                    <i @click="sendMsg" class="fa-solid fa-paper-plane sentbtn"></i>
+                </div>
+            </div>
+            <transition name="fade">
+                <div class="QModal" id="QModal" v-show="isQmodal">
+                    <div class="Qdialog">
+                        <div class="QTitle">
+                            <h2>Question</h2>
+                        </div>
+                        <div class="Qquestion">
+                            <textarea v-model="question" name="" id="" cols="30" rows="10"
+                                placeholder="在這裡輸入題目"></textarea>
+
+
+                            <div class="isanswer">
+                                <div>標準答案</div>
+                                <label class="switch">
+                                    <input type="checkbox" v-model="hasAnswer">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <textarea v-model="answer" :class="{noanswer:!hasAnswer}" :disabled="!hasAnswer" name=""
+                                id="" cols="30" rows="10" placeholder="答案"></textarea>
+                        </div>
+                        <div class="confirm">
+                            <button @click="openQmodal" class="cacelbtn">取消</button>
+                            <button @click="questionConfirm">確認</button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+            <div class="confetti">
+                <canvas id="bingo" class="bingo"></canvas>
+                <div class="bingoContent">
+                    <transition name="fadeinandout" enter-active-class="animate__animated animate__heartBeat"
+                        leave-active-class="animate__animated animate__bounceOut">
+                        <h1 v-if="isshowconfetti">\{{answerNickname}}答對了問題!!</h1>
+                    </transition>
+                </div>
+            </div>
+        </div>
+        <div class="loading" v-if="isloading">
+            <span class="spinner">
+                <div class="lds-ring">
+                    <div></div>
+                    <div></div>
+                </div>
+            </span>
+        </div>
+        <transition name="slide">
+            <div class="alert" v-show="isshowalert">
+                <h3>\{{alertMsg}}</h3>
+            </div>
+        </transition>
+    </div>
+
+
+
+
+    <script src="/js/clientSocket.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/myconfetti.js"></script>
+
+    <script src="/js/cdn/vanta.waves.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{!-- three.js --}}
+    <script src="/js/cdn/three.min.js"></script>
+    {{!-- Vue --}}
+    <script src="/js/cdn/vue.global.js"></script>
+    {{!-- axios --}}
+    <script src="/js/cdn/axios.min.js"></script>
+    {{!-- fontawsome --}}
+    <script src="/js/cdn/fontawsome.js"></script>
+
+    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
+
+    <link rel="stylesheet" href="/css/style.css">
+    {{!-- animate.css --}}
+    <link rel="stylesheet" href="/css/animate.min.css">
+    <title> @ {{sUname}}</title>
+</head>
+
+<body>  
+    <div class="threeBG" id="threeBG">
+    </div>
+    <div class="BG">
+        <div class="dot">
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+        </div>
+    </div>
+    <div id="app" v-cloak>
+        <div class="main">
+            <div class="navbar">
+                <div class="navlogo"><a href="../"><img src="/img/PANUKU2.png" alt=""></a></div>
+            </div>
+            <div class="accountinfo">
+                <div class="accountpoints">
+                    <span>\{{points}}</span>
+                    <img src="/img/coin.svg" alt="">
+                </div>
+            </div>
+        </div>
+        <div class="loading" v-if="isloading">
+            <span class="spinner">
+                <div class="lds-ring">
+                    <div></div>
+                    <div></div>
+                </div>
+            </span>
+        </div>
+        <transition name="slide">
+            <div @click="signupbtn" class="alert" v-show="isshowalert">
+                <h3>\{{alertMsg}}</h3>
+            </div>
+        </transition>
+    </div>
+    <script src="/js/main_account.js"></script>
+    <script src="/js/cdn/vanta.waves.min.js"></script>
+
+</body>
+
+</html>

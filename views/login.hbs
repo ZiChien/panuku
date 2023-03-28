@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{!-- three.js --}}
+    <script src="/js/cdn/three.min.js"></script>
+    {{!-- Vue --}}
+    <script src="/js/cdn/vue.global.js"></script>
+    {{!-- axios --}}
+    <script src="/js/cdn/axios.min.js"></script>
+    {{!-- fontawsome --}}
+    <script src="/js/cdn/fontawsome.js"></script>
+
+    <link rel="icon" type="image/x-icon" href="/img/favicon.png">
+
+    <link rel="stylesheet" href="/css/style.css">
+    {{!-- animate.css --}}
+    <link rel="stylesheet" href="/css/animate.min.css">
+    <title>Panuku_login</title>
+</head>
+
+<body>
+    <div class="threeBG" id="threeBG">
+    </div>
+    <div class="BG">
+        <div class="dot">
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+            <circle></circle>
+        </div>
+    </div>
+    <div id="app" v-cloak>
+        <div class="main">
+            <div class="navbar">
+                <div class="navlogo"><a href="../"><img src="/img/PANUKU2.png" alt=""></a></div>
+            </div>
+            <div class="loginctn">
+                <div class="inputrow">
+                    <input @keyup.enter="loginbtn" v-model="logininfo.email" type="text" placeholder="example@gmail.com">
+                </div>
+                <div class="inputrow">
+                    <input @keyup.enter="loginbtn" v-model="logininfo.password" type="password" name="" id="" placeholder="密碼">
+                </div>
+                <div class="inputrow">
+                    <button @click="loginbtn" class="whitebtn">登入</button>
+                </div>
+                <div class="signupctn">
+                    <h5>還沒有帳號嗎?<a href="/signUp">立即註冊</a></h5>
+                </div>
+            </div>
+        </div>
+        <div class="loading" v-if="isloading">
+            <span class="spinner">
+                <div class="lds-ring">
+                    <div></div>
+                    <div></div>
+                </div>
+            </span>
+        </div>
+        <transition name="slide">
+            <div class="alert" v-show="isshowalert">
+                <h3>\{{alertMsg}}</h3>
+            </div>
+        </transition>
+    </div>
+    <script src="/js/main_login.js"></script>
+    <script src="/js/cdn/vanta.waves.min.js"></script>
+
+</body>
+
+</html>
