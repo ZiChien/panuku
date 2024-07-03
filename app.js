@@ -22,9 +22,11 @@ app.use(session({
 
 const page = require('./routes/page')
 const api = require('./routes/api')
-const PORT = process.env.PROT || 4000
-server.listen(PORT,"0.0.0.0", () => {
-    console.log(`server is runging on ${PORT}`);
+
+const PORT = process.env.PORT || 3030;
+const HOST = '0.0.0.0'
+server.listen(PORT, HOST, () => {
+    console.log(`server is running on ${HOST}:${PORT}`)
 })
 
 
